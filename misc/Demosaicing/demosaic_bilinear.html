@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<script>
+
+function demosaic(image_width, image_height, bytes) {
+
+	var number_of_pixels = image_width * image_height;
+
+	var rgba = new Uint16Array(number_of_pixels * 4);
+
+	// var pixel_rgba = new Uint16Array(4);
+
+	var i;
+
+	for(i = 0; i != number_of_pixels; i++) {
+
+                var offset = i * 4;
+
+		var row = Math.floor(i/image_width);
+		var column = i % image_width;
+
+		var current_pixel_type = (i % 2) + ((row % 2) * 2);
+
+		if (row == 0 || row == image_height - 1 ||
+		    column == 0 || column == image_width - 1) {
+			
+			rgba[offset] = 0;
+                        rgba[offset + 1] = 0;
+                        rgba[offset + 2] = 0;
+                        rgba[offset + 3] = 2**12 - 1;
+
+		} else {
+
+			// pixel_rgba = [0, 0, 0, 2**12 - 1];
+
+			if (current_pixel_type == 0 ||
+			    current_pixel_type == 3) {
+
+				// set green pixel
+				rgba[offset + 1] = bytes[i];
+
+				var vert_colour = 2;
+				var hor_colour = 0;
+
+				if (current_pixel_type == 3) {
+
+					vert_colour = 0;
+					hor_colour = 2;
+				}
+
+				// calculate vert colour
+
+				rgba[offset + vert_colour] = ((
+					bytes[i + image_width] + 
+					bytes[i - image_width]) >> 1);
+
+				// calculate horizontal colour
+
+				rgba[offset + hor_colour] = ((
+						bytes[i + 1] +
+						bytes[i - 1]) >> 1);
+			} else {
+
+				// set green pixel
+
+				rgba[offset + 1] = ((bytes[i + 1] +
+					bytes[i - 1] +
+					bytes[i + image_width] +
+					bytes[i - image_width]) >> 2);
+
+				var colour = 2;
+				var diag_colour = 0;
+
+				if (current_pixel_type == 1) {
+
+					colour = 0;
+					diag_colour = 2;
+
+				}
+
+				// set this colours pixel
+				rgba[offset + colour] = bytes[i];
+
+				// calculate diagonal colours pixel
+
+				rgba[offset + diag_colour] = ((
+					bytes[i + image_width + 1] +
+					bytes[i + image_width - 1] +
+					bytes[i - image_width + 1] +
+					bytes[i - image_width - 1]) >> 2);
+
+			}			
+                        
+                        rgba[offset + 3] = 2**12 - 1;
+
+		}	
+
+		// rgba.set(pixel_rgba, i*4);
+
+	}
+
+	var imageData = new ImageData(image_width, image_height);
+
+	for(i = 0; i != number_of_pixels; i++) {
+		
+		imageData.data[4*i] = rgba[4*i] >> 4;
+		imageData.data[4*i+1] = rgba[4*i+1] >> 4;
+		imageData.data[4*i+2] = rgba[4*i+2] >> 4;
+		imageData.data[4*i+3] = rgba[4*i+3] >> 4;
+	}
+
+	return imageData;
+}
+
+function loadFile() {
+        
+	var input, file;
+
+	input = document.getElementById('fileinput');
+
+	var r = new FileReader();
+         
+        //onload handler
+        r.onload = function(e) { 
+            var contents = e.target.result;
+            var buffer = r.result;  
+
+	    var bytes = new Uint16Array(buffer);
+
+	    var canvas = document.getElementById("imagecanvas");
+	    var ctx = canvas.getContext("2d");
+	
+	    var i = 0;
+	    for (i = 0; i != 100; i++) {
+		    imageData = demosaic(1280, 720, bytes);
+		    // console.log(imageData);
+		    ctx.putImageData(imageData, 0, 0);
+	    }
+        }
+ 
+	file = input.files[0];
+
+        r.readAsArrayBuffer(file);
+
+}
+
+</script>
+</head>
+<body>
+<form action='#' onsubmit="return false;">
+<input type='file' id='fileinput'>
+<input type='button' id='btnLoad' value='Load' onclick='loadFile();'>
+<canvas id="imagecanvas" width="1280" height="720"></canvas>
+</form>
+</body>
+</html>

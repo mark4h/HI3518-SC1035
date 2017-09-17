@@ -1,0 +1,5 @@
+0x00000000	HI_I2C_WriteConfig	/srv/nfs/programs/blog_post_3/hi_i2c/hi_i2c	(unknown)
+0x00000000	HI_I2C_Read	/srv/nfs/programs/blog_post_3/hi_i2c/hi_i2c	(unknown)
+0x00000000	I2C_Open	/srv/nfs/programs/blog_post_3/hi_i2c/hi_i2c	(unknown)
+0x00000000	I2C_Close	/srv/nfs/programs/blog_post_3/hi_i2c/hi_i2c	(unknown)
+0x00000000	HI_I2C_Write	/srv/nfs/programs/blog_post_3/hi_i2c/hi_i2c	(unknown)

@@ -1,0 +1,1 @@
+The preinstalled program that performed the image capture on the HI3518 camera module and the settings extracted using the Snowman decompiler https://github.com/yegord/snowman
